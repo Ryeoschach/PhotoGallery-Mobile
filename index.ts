@@ -44,6 +44,59 @@ if (Platform.OS === 'web') {
     }
     originalError.apply(console, args);
   };
+  
+  // 处理 aria-hidden 相关的无障碍性问题
+  // 这个函数会在 DOM 加载完成后运行
+  const handleAriaHiddenIssues = () => {
+    if (typeof document !== 'undefined') {
+      // 创建一个 MutationObserver 来监听 DOM 变化
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
+            const target = mutation.target as HTMLElement;
+            if (target.getAttribute('aria-hidden') === 'true') {
+              // 检查是否有聚焦的子元素
+              const focusedElement = target.querySelector(':focus');
+              if (focusedElement) {
+                // 移除焦点或者移除 aria-hidden 属性
+                (focusedElement as HTMLElement).blur();
+              }
+            }
+          }
+        });
+      });
+      
+      // 开始观察
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['aria-hidden'],
+        subtree: true
+      });
+      
+      // 定期检查和修复现有的 aria-hidden 问题
+      const fixAriaHiddenIssues = () => {
+        const elementsWithAriaHidden = document.querySelectorAll('[aria-hidden="true"]');
+        elementsWithAriaHidden.forEach((element) => {
+          const focusedChild = element.querySelector(':focus');
+          if (focusedChild) {
+            (focusedChild as HTMLElement).blur();
+          }
+        });
+      };
+      
+      // 每秒检查一次
+      setInterval(fixAriaHiddenIssues, 1000);
+    }
+  };
+  
+  // 当 DOM 准备好时执行
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', handleAriaHiddenIssues);
+    } else {
+      handleAriaHiddenIssues();
+    }
+  }
 }
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);
