@@ -1,7 +1,13 @@
 /**
  * 主页屏幕
- * 显示照片库的主要内容和导航
- */
+ * 显示照片库的主要import { 
+  fetchImages, 
+  selectImages, 
+  selectImagesLoading, 
+  selectImagesError,
+  switchToUserImages,
+  switchToAllImages,
+} from '../store/slices/imagesSlice'; */
 
 import React, { useEffect, useRef } from 'react';
 import {
@@ -25,7 +31,9 @@ import {
   fetchImages, 
   selectImages, 
   selectImagesLoading, 
-  selectImagesError 
+  selectImagesError,
+  switchToUserImages,
+  switchToAllImages,
 } from '../store/slices/imagesSlice';
 import { 
   fetchGroups, 
@@ -74,9 +82,12 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const loadData = async () => {
     try {
       await Promise.all([
-        dispatch(fetchImages()).unwrap(),
+        dispatch(fetchImages()).unwrap(), // 加载所有图片
+        dispatch(fetchImages({ mine: true })).unwrap(), // 加载用户图片
         dispatch(fetchGroups()).unwrap(),
       ]);
+      // 默认显示所有图片
+      dispatch(switchToAllImages());
     } catch (error) {
       console.log('加载数据失败:', error);
     }
@@ -173,13 +184,13 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.quickActions}>
           <TouchableOpacity 
             style={styles.quickActionButton}
-            onPress={handleViewAllImages}
+            onPress={() => dispatch(switchToAllImages())}
           >
             <Text style={styles.quickActionText}>查看所有图片</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.quickActionButton}
-            onPress={() => dispatch(fetchImages({ mine: true }))}
+            onPress={() => dispatch(switchToUserImages())}
           >
             <Text style={styles.quickActionText}>我的图片</Text>
           </TouchableOpacity>

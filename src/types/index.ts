@@ -50,7 +50,9 @@ export interface AuthState {
 }
 
 export interface ImagesState {
-  images: Image[];
+  images: Image[];           // 当前显示的图片列表（可能是所有图片或用户图片）
+  allImages: Image[];        // 所有图片的缓存
+  userImages: Image[];       // 用户图片的缓存
   currentImage: Image | null;
   isLoading: boolean;
   error: string | null;
@@ -63,13 +65,13 @@ export interface GroupsState {
 }
 
 // 移动端特定类型
-export interface NavigationParamList {
+export type NavigationParamList = {
   Login: undefined;
   Home: undefined;
   Gallery: undefined;
   ImageDetail: { imageId: number };
   Profile: undefined;
-}
+};
 
 export interface LoginCredentials {
   username: string;

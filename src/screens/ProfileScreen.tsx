@@ -18,7 +18,7 @@ import {
   selectUser, 
   logoutUser,
 } from '../store/slices/authSlice';
-import { selectImages } from '../store/slices/imagesSlice';
+import { selectAllImages, selectUserImages } from '../store/slices/imagesSlice';
 import { NavigationParamList } from '../types';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<NavigationParamList, 'Profile'>;
@@ -30,10 +30,16 @@ interface Props {
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
-  const images = useAppSelector(selectImages);
+  const allImages = useAppSelector(selectAllImages);
+  const userImages = useAppSelector(selectUserImages);
 
-  // 获取用户的图片数量
-  const userImageCount = images.filter(image => image.owner === user?.id).length;
+  // 获取用户的图片数量 - 使用缓存的用户图片数据或从所有图片中筛选
+  const userImageCount = userImages.length > 0 
+    ? userImages.length 
+    : allImages.filter(image => image.owner === user?.id).length;
+
+  // 总图片数量 - 使用缓存的所有图片数据
+  const totalImageCount = allImages.length;
 
   // 处理登出
   const handleLogout = () => {
@@ -105,7 +111,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.statLabel}>我的图片</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{images.length}</Text>
+            <Text style={styles.statNumber}>{totalImageCount}</Text>
             <Text style={styles.statLabel}>总图片数</Text>
           </View>
         </View>

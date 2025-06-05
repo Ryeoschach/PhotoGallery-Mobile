@@ -10,6 +10,8 @@ import { imagesApi } from '../../services/api';
 // 初始状态
 const initialState: ImagesState = {
   images: [],
+  allImages: [],
+  userImages: [],
   currentImage: null,
   isLoading: false,
   error: null,
@@ -72,6 +74,17 @@ const imagesSlice = createSlice({
         state.currentImage = image;
       }
     },
+    // 切换显示模式（显示所有图片或用户图片）
+    switchToAllImages: (state) => {
+      if (state.allImages.length > 0) {
+        state.images = state.allImages;
+      }
+    },
+    switchToUserImages: (state) => {
+      if (state.userImages.length > 0) {
+        state.images = state.userImages;
+      }
+    },
   },
   extraReducers: (builder) => {
     // 处理获取图片列表
@@ -83,6 +96,15 @@ const imagesSlice = createSlice({
       .addCase(fetchImages.fulfilled, (state, action) => {
         state.isLoading = false;
         state.images = action.payload;
+        
+        // 根据请求参数更新相应的缓存
+        const isMineRequest = action.meta.arg?.mine;
+        if (isMineRequest) {
+          state.userImages = action.payload;
+        } else {
+          state.allImages = action.payload;
+        }
+        
         state.error = null;
       })
       .addCase(fetchImages.rejected, (state, action) => {
@@ -100,11 +122,17 @@ const imagesSlice = createSlice({
         state.isLoading = false;
         state.currentImage = action.payload;
         
-        // 同时更新images列表中的对应项
-        const index = state.images.findIndex(img => img.id === action.payload.id);
-        if (index !== -1) {
-          state.images[index] = action.payload;
-        }
+        // 同时更新所有相关列表中的对应项
+        const updateImageInList = (list: Image[]) => {
+          const index = list.findIndex(img => img.id === action.payload.id);
+          if (index !== -1) {
+            list[index] = action.payload;
+          }
+        };
+        
+        updateImageInList(state.images);
+        updateImageInList(state.allImages);
+        updateImageInList(state.userImages);
         
         state.error = null;
       })
@@ -116,13 +144,21 @@ const imagesSlice = createSlice({
 });
 
 // 导出actions
-export const { clearError, clearCurrentImage, setCurrentImage } = imagesSlice.actions;
+export const { 
+  clearError, 
+  clearCurrentImage, 
+  setCurrentImage, 
+  switchToAllImages, 
+  switchToUserImages 
+} = imagesSlice.actions;
 
 // 导出reducer
 export default imagesSlice.reducer;
 
 // 选择器
 export const selectImages = (state: { images: ImagesState }) => state.images.images;
+export const selectAllImages = (state: { images: ImagesState }) => state.images.allImages;
+export const selectUserImages = (state: { images: ImagesState }) => state.images.userImages;
 export const selectCurrentImage = (state: { images: ImagesState }) => state.images.currentImage;
 export const selectImagesLoading = (state: { images: ImagesState }) => state.images.isLoading;
 export const selectImagesError = (state: { images: ImagesState }) => state.images.error;
