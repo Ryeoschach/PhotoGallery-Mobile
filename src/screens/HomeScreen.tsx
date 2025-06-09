@@ -100,18 +100,16 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   // 处理登出
   const handleLogout = () => {
-    Alert.alert(
-      '确认登出',
-      '您确定要登出吗？',
-      [
-        { text: '取消', style: 'cancel' },
-        { 
-          text: '确定', 
-          style: 'destructive',
-          onPress: () => dispatch(logoutUser())
-        },
-      ]
-    );
+    console.log('HomeScreen handleLogout triggered');
+    console.log('Dispatching logoutUser directly from HomeScreen');
+    dispatch(logoutUser())
+      .then(() => {
+        console.log('HomeScreen logoutUser dispatch completed successfully');
+      })
+      .catch((error) => {
+        console.error('HomeScreen logout failed:', error);
+        Alert.alert('登出失败', '操作无法完成，请稍后再试。');
+      });
   };
 
   // 导航到图片详情

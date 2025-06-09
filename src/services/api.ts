@@ -186,8 +186,10 @@ export const authApi = {
 
   // 用户登出
   logout: async (): Promise<void> => {
+    console.log('authApi.logout called'); // 新增日志
     try {
       await secureStorage.deleteItem(TOKEN_KEY);
+      console.log('Token deleted successfully'); // 新增日志
     } catch (error) {
       console.log('登出时清除token失败:', error);
     }

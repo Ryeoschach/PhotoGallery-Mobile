@@ -43,21 +43,16 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
   // 处理登出
   const handleLogout = () => {
-    Alert.alert(
-      '确认登出',
-      '您确定要登出吗？',
-      [
-        { text: '取消', style: 'cancel' },
-        { 
-          text: '确定', 
-          style: 'destructive',
-          onPress: () => {
-            dispatch(logoutUser());
-            navigation.navigate('Login');
-          }
-        },
-      ]
-    );
+    console.log('ProfileScreen handleLogout triggered');
+    console.log('Dispatching logoutUser directly (no Alert)');
+    dispatch(logoutUser())
+      .then(() => {
+        console.log('logoutUser dispatch completed successfully');
+      })
+      .catch((error) => {
+        console.error('Logout failed:', error);
+        Alert.alert('登出失败', '操作无法完成，请稍后再试。');
+      });
   };
 
   // 导航到我的图片

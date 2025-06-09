@@ -21,6 +21,8 @@ const Stack = createNativeStackNavigator<NavigationParamList>();
 
 const AppNavigator: React.FC = () => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  
+  console.log('AppNavigator render - isAuthenticated:', isAuthenticated); // 新增日志
 
   return (
     <NavigationContainer>

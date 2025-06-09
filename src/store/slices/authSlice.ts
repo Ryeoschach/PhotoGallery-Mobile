@@ -168,6 +168,7 @@ const authSlice = createSlice({
     // 处理登出
     builder
       .addCase(logoutUser.fulfilled, (state) => {
+        console.log('logoutUser.fulfilled reducer executed'); // 添加日志
         state.user = null;
         state.tokens = null;
         state.isAuthenticated = false;
