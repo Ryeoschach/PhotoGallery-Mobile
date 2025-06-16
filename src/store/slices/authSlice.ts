@@ -25,19 +25,40 @@ export const loginUser = createAsyncThunk<
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
+      console.log('开始登录请求:', credentials);
+      
       // 执行登录
       const loginResponse = await authApi.login(credentials);
+      console.log('登录API响应成功:', loginResponse);
       
       // 获取用户信息
       const userResponse = await authApi.getCurrentUser();
+      console.log('获取用户信息成功:', userResponse);
       
       return {
         tokens: loginResponse.data,
         user: userResponse.data,
       };
     } catch (error) {
+      console.error('登录失败详情:', error);
       const apiError = error as ApiError;
-      return rejectWithValue(apiError.message);
+      
+      // 根据不同的错误类型返回更具体的错误信息
+      let errorMessage = apiError.message;
+      
+      if (apiError.status === 401) {
+        errorMessage = '用户名或密码错误，请检查后重试';
+      } else if (apiError.status === 400) {
+        errorMessage = '请求格式错误，请检查输入信息';
+      } else if (apiError.status === 429) {
+        errorMessage = '登录尝试过于频繁，请稍后再试';
+      } else if (apiError.status === 500) {
+        errorMessage = '服务器内部错误，请稍后重试';
+      } else if (apiError.code === 'NETWORK_ERROR') {
+        errorMessage = '网络连接失败，请检查网络设置';
+      }
+      
+      return rejectWithValue(errorMessage);
     }
   }
 );

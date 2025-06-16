@@ -143,19 +143,53 @@ const handleApiResponse = <T>(response: AxiosResponse<T>): ApiResponse<T> => {
 
 // 工具函数：处理API错误
 const handleApiError = (error: AxiosError): ApiError => {
+  console.log('API错误详情:', {
+    response: error.response?.data,
+    status: error.response?.status,
+    message: error.message,
+    code: error.code,
+  });
+
   if (error.response) {
+    const responseData = error.response.data as any;
+    
+    // 处理Django REST framework的标准错误格式
+    let message = '请求失败';
+    
+    if (responseData?.detail) {
+      message = responseData.detail;
+    } else if (responseData?.non_field_errors) {
+      message = Array.isArray(responseData.non_field_errors) 
+        ? responseData.non_field_errors.join(', ')
+        : responseData.non_field_errors;
+    } else if (responseData?.username) {
+      message = `用户名: ${Array.isArray(responseData.username) 
+        ? responseData.username.join(', ') 
+        : responseData.username}`;
+    } else if (responseData?.password) {
+      message = `密码: ${Array.isArray(responseData.password) 
+        ? responseData.password.join(', ') 
+        : responseData.password}`;
+    } else if (responseData?.message) {
+      message = responseData.message;
+    } else if (typeof responseData === 'string') {
+      message = responseData;
+    }
+
     return {
-      message: (error.response.data as any)?.message || '请求失败',
+      message,
       status: error.response.status,
-      code: (error.response.data as any)?.code,
+      code: responseData?.code,
     };
   } else if (error.request) {
     return {
       message: '网络连接失败，请检查网络设置',
+      code: 'NETWORK_ERROR',
     };
   } else {
     return {
       message: error.message || '未知错误',
+      code: 'UNKNOWN_ERROR',
     };
   }
 };
